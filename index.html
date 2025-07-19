@@ -1,28 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>Custom Alphabet Decoder</title>
-<style>
-  body { background: #121212; color: #eee; font-family: monospace; padding: 20px; }
-  textarea { width: 100%; font-family: monospace; margin-bottom: 10px; }
-  button { padding: 10px 20px; font-size: 16px; }
-  pre { background: #222; padding: 15px; white-space: pre-wrap; word-break: break-word; }
-</style>
-</head>
-<body>
-
-<h2>Decode with custom alphabet</h2>
-
-<label>Paste your custom alphabet string (like your long variable name):</label><br/>
-<textarea id="alphabet" rows="4" placeholder="Paste long alphabet string here..."></textarea><br/>
-
-<label>Paste your encoded string to decode:</label><br/>
-<textarea id="encoded" rows="6" placeholder="Paste encoded string here..."></textarea><br/>
-
+<html>
+<head><title>Base25 Decoder</title></head>
+<body style="background:#111;color:#eee;font-family:monospace;padding:20px">
+<h2>Base25 Decoder</h2>
+<label>Alphabet (25 unique chars):</label><br/>
+<textarea id="alphabet" rows="2" style="width:100%"></textarea><br/>
+<label>Encoded String:</label><br/>
+<textarea id="encoded" rows="6" style="width:100%"></textarea><br/>
 <button onclick="decode()">Decode</button>
-
-<h3>Decoded output:</h3>
 <pre id="output"></pre>
 
 <script>
@@ -30,45 +15,36 @@ function decode() {
   const alphabetRaw = document.getElementById('alphabet').value.trim();
   const encoded = document.getElementById('encoded').value.trim();
 
-  // Extract unique characters in order for alphabet
   let seen = new Set();
   let alphabet = '';
   for (let ch of alphabetRaw) {
-    if (!seen.has(ch)) {
-      seen.add(ch);
-      alphabet += ch;
-    }
+    if (!seen.has(ch)) alphabet += ch, seen.add(ch);
   }
 
-  if (alphabet.length !== 64) {
-    document.getElementById('output').textContent = 
-      `Error: Alphabet must contain exactly 64 unique characters.\n` +
-      `Your alphabet has ${alphabet.length} unique characters.`;
+  if (alphabet.length !== 25) {
+    document.getElementById('output').textContent = `Alphabet must have 25 unique chars. Got: ${alphabet.length}`;
     return;
   }
 
-  let bits = 0, value = 0;
-  let output = [];
-
-  for (let c of encoded) {
-    let idx = alphabet.indexOf(c);
+  let number = 0n;
+  for (const c of encoded) {
+    const idx = alphabet.indexOf(c);
     if (idx === -1) {
-      document.getElementById('output').textContent = `Error: Invalid character '${c}' in encoded string.`;
+      document.getElementById('output').textContent = `Invalid char: ${c}`;
       return;
     }
-
-    value = (value << 6) | idx;
-    bits += 6;
-
-    if (bits >= 8) {
-      bits -= 8;
-      output.push(String.fromCharCode((value >> bits) & 0xFF));
-    }
+    number = number * 25n + BigInt(idx);
   }
 
-  document.getElementById('output').textContent = output.join('');
+  // Convert big number to bytes
+  let bytes = [];
+  while (number > 0) {
+    bytes.unshift(Number(number % 256n));
+    number = number / 256n;
+  }
+
+  document.getElementById('output').textContent = bytes.map(b => String.fromCharCode(b)).join('');
 }
 </script>
-
 </body>
 </html>
