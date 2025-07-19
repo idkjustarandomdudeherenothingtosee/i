@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head><title>Base25 Decoder</title></head>
+<head><title>Base22 Decoder</title></head>
 <body style="background:#111;color:#eee;font-family:monospace;padding:20px">
-<h2>Base25 Decoder</h2>
-<label>Alphabet (25 unique chars):</label><br/>
+<h2>Base22 Decoder</h2>
+<label>Alphabet (22 unique chars):</label><br/>
 <textarea id="alphabet" rows="2" style="width:100%"></textarea><br/>
 <label>Encoded String:</label><br/>
 <textarea id="encoded" rows="6" style="width:100%"></textarea><br/>
@@ -21,11 +21,12 @@ function decode() {
     if (!seen.has(ch)) alphabet += ch, seen.add(ch);
   }
 
-  if (alphabet.length !== 25) {
-    document.getElementById('output').textContent = `Alphabet must have 25 unique chars. Got: ${alphabet.length}`;
+  if (alphabet.length !== 22) {
+    document.getElementById('output').textContent = `Alphabet must have 22 unique chars. Got: ${alphabet.length}`;
     return;
   }
 
+  // Convert encoded string to a big integer in base22
   let number = 0n;
   for (const c of encoded) {
     const idx = alphabet.indexOf(c);
@@ -33,17 +34,19 @@ function decode() {
       document.getElementById('output').textContent = `Invalid char: ${c}`;
       return;
     }
-    number = number * 25n + BigInt(idx);
+    number = number * 22n + BigInt(idx);
   }
 
-  // Convert big number to bytes
+  // Convert big integer to bytes
   let bytes = [];
   while (number > 0) {
     bytes.unshift(Number(number % 256n));
     number = number / 256n;
   }
 
-  document.getElementById('output').textContent = bytes.map(b => String.fromCharCode(b)).join('');
+  // Convert bytes to string
+  const decoded = bytes.map(b => String.fromCharCode(b)).join('');
+  document.getElementById('output').textContent = decoded;
 }
 </script>
 </body>
